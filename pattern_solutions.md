@@ -37,9 +37,9 @@ A	B	AxorB
 0	1	1
 1	1	0
 ```
-If we make xor with all number in array we get next: 
-Given array:[3,4,2,3,2]
-Make XOR: 3^4^2^3^2 = (3^3)^(4^0)^(2^2) = 4 (because 4 xor 0 = 4 );
+If we make xor with all number in array we get next: \
+Given array:`[3,4,2,3,2]` \
+Make XOR: `3^4^2^3^2 = (3^3)^(4^0)^(2^2) = 4` (because `4 xor 0 = 4` );
 ``` java 
 class Solution {
     public int singleNumber(int[] nums) {
