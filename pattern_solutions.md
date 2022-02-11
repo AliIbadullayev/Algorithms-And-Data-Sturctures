@@ -85,3 +85,43 @@ class Solution {
     }
 }
 ``` 
+## 70. Climbing Stairs
+You are climbing a staircase. It takes n steps to reach the top.
+Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?
+
+There is 2 ways to solve this problem:
+1. Recursively 
+2. Using principies of dynamic programming
+
+### 1. At each n stairs the number of distinc ways equal to count of ways on previos stainrs count (n-1) and count of (n-2): 
+ways(3) = ways (3-1) + ways (3-2) = 2 + 1 = 3 
+ways(4) = ways (3) + ways(2) = 5 
+This is the concept of Fibonacci numbers 
+``` java
+class Solution {
+    public int climbStairs(int n) {
+         if (n < 2) {return 1;}
+         else  return climbStairs(n-1) + climbStairs(n-2);
+    }
+}
+```
+### 2. The second way is using the principies of dynamic programming. At all it is using the same principe: Fibonacci numbers: 
+We create 2 variables which meaning the numbers of previous and current count of ways:
+for example if we had n=3 then we will do following:\
+n = 1: current = 1, previous = 0, total = 1\
+n = 2: current = current + previous = 1+0 = 1, previous = current = 1, total = 2\
+n = 3: current = current + previous = 1+1 = 2, previous = current = 1, total = 3
+``` java 
+class Solution {
+    public int climbStairs(int n) {
+        int current = 1, previous = 0;
+        int total = 0;
+        while (n-- > 0){
+            total = current+previous;
+            previous = current;
+            current = total;
+        }
+        return total;
+    }
+}
+``` 
