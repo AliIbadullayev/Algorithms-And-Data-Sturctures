@@ -2,9 +2,11 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
+//        test();
+
         Scanner scanner = new Scanner(System.in);
         int n = scanner.nextInt();
-        int[][] seats = new int[4][6];
+        int[][] seats = new int[n][6];
         int counter = 0;
         while (counter != n) {
             char[] row = scanner.next().toCharArray();
@@ -94,7 +96,7 @@ public class Main {
                 }
             }
         }
-        System.out.println("Cannot fulfill passengers requirements.");
+        System.out.println("Cannot fulfill passengers requirements");
 
     }
 
@@ -124,7 +126,7 @@ public class Main {
         System.out.println();
 
         for (int i = 0; i < seats.length; i++) {
-            for (int j = 0; j < seats[1].length; j++) {
+            for (int j = 0; j < seats[0].length; j++) {
                 if (row == i) {
                     if (takenSeats[j] == 1) {
                         System.out.print("X");
@@ -144,7 +146,59 @@ public class Main {
                     System.out.print("_");
                 }
             }
+
             System.out.println();
+        }
+    }
+
+    private static int[][] generateTestSeats(){
+        int row = (int) (Math.random() * 10);
+        int[][] seats = new int[row][6];
+        for (int i = 0; i < row; i++){
+            for (int j = 0; j < 6; j++) {
+                double possibility = Math.random();
+                if (possibility < 0.5D)
+                    seats[i][j] = 0;
+                else
+                    seats[i][j] = 1;
+            }
+        }
+        return seats;
+    }
+
+    private static String[][] generateTestGroup(){
+        int n = (int) (Math.random() * 10);
+        String[][] groups = new String[n][3];
+        for (int i = 0; i < n; i++){
+            double possibilityPeoples = Math.random();
+            if (possibilityPeoples <= 1D && possibilityPeoples >= 2/3d)
+                groups[i][0] = String.valueOf(3);
+            else if (possibilityPeoples <2/3d && possibilityPeoples >= 1/3d)
+                groups[i][0] = String.valueOf(2);
+            else
+                groups[i][0] = String.valueOf(1);
+
+            double possibilitySide = Math.random();
+            if (possibilitySide < 0.5D)
+                groups[i][1] = "left";
+            else
+                groups[i][1] = "right";
+
+            double possibilityPos = Math.random();
+            if (possibilityPos < 0.5D)
+                groups[i][2] = "aisle";
+            else
+                groups[i][2] = "window";
+        }
+        return groups;
+    }
+
+    public static void test(){
+        int[][] seats = generateTestSeats();
+        String[][] groups = generateTestGroup();
+
+        for (String[] group : groups) {
+            takeSeats(seats.length, seats, Integer.parseInt(group[0]), group[1], group[2]);
         }
     }
 }
