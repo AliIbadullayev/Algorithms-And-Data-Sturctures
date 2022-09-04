@@ -1,94 +1,46 @@
 import java.util.*;
-
+import java.util.stream.Collectors;
 
 public class Main{
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
         int n = in.nextInt();
         int k = in.nextInt();
-        int[] idx = new int[n];
-        int[] res = new int[n];
         int[] arr = new int[n];
-        int temp = 0;
-        for (int i = 0; i<n; i++) {
+        for (int i = 0; i<n; i++){
             arr[i] = in.nextInt();
-            idx[i] = i;
         }
+        dist(arr, n , k);
 
-        for (int i = 0; i<n; i++){
-            for (int j = 1; j < n - i ; j++){
-                if (arr[j-1] > arr[j]) {
-                    temp = arr[j-1];
-                    arr[j-1] = arr[j];
-                    arr[j] = temp;
-                    temp = idx[j-1];
-                    idx[j-1] = idx[j];
-                    idx[j] = temp;
-                }
+    }
+
+    public static void dist(int[] arr, int n, int k){
+        HashMap<Integer, Integer> res = new HashMap<>();
+        List<Integer> sorted_arr = Arrays.stream(arr).boxed().sorted().collect(Collectors.toList());
+        int s = sorted_arr.stream().skip(1).limit(k).mapToInt(Integer::intValue).sum() - k* sorted_arr.get(0);
+        res.put(sorted_arr.get(0), s);
+        int nums_at_left = 0;
+        int nums_at_right = k;
+
+        for (int i = 1; i<n; i++){
+            nums_at_left++;
+            nums_at_right--;
+            int dif = sorted_arr.get(i) - sorted_arr.get(i-1);
+            s = s - dif*nums_at_right + dif*(nums_at_left-1);
+            while (nums_at_right + i + 1 < n ){
+                int l = sorted_arr.get(i) - sorted_arr.get(i-nums_at_left);
+                int r = sorted_arr.get(nums_at_right + i + 1) - sorted_arr.get(i);
+                if (l > r ){
+                    nums_at_right++;
+                    nums_at_left--;
+                    s -= l-r;
+                } else
+                    break;
             }
+            res.put(sorted_arr.get(i), s);
         }
-
-        for (int i = 0; i<n; i++){
-            int minSum = 0;
-
-            int l = i - 1;
-            int r = i + 1;
-            for (int t = 0; t < k; t++){
-                if (l<0){
-                    l = r + 1;
-                    if (r>n-1 || l>n-1 || r == 0){
-                        l = r;
-                    }
-                }
-                else if (l > n-1){
-                    l = r ;
-                }
-                else if (r<0){
-                    r = l;
-                }
-                else if (r>n-1){
-                    r = l - 1;
-                    if (l<0 || r<0 || l == n-1){
-                        r = l;
-                    }
-                }
-                int tmpL = Math.abs(arr[i] - arr[l]);
-                int tmpR = Math.abs(arr[i] - arr[r]);
-                if (tmpL < tmpR){
-                    minSum += tmpL;
-                    if (l>i)
-                        if (l>r)
-                            l++;
-                        else
-                            l = r+1;
-                    else
-                        if (l<r)
-                            l--;
-                        else
-                            l = r-1;
-                }
-                else {
-                    minSum += tmpR;
-                    if (r<i)
-                        if (r<l)
-                            r--;
-                        else
-                            r = l-1;
-                    else
-                        if (r < l)
-                            r = l+1;
-                        else
-                            r++;
-                }
-            }
-            res[idx[i]] = minSum;
-        }
-
-        for (int i = 0 ; i < n; i++){
-            System.out.print(res[i]);
-            if (i != n-1){
-                System.out.print(" ");
-            }
+        for (int i = 0; i < n; i++){
+            System.out.print(res.get(arr[i]) +" ");
         }
     }
 }
