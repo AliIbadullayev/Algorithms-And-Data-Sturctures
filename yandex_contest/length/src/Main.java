@@ -15,7 +15,7 @@ public class Main{
     }
 
     public static void dist(int[] arr, int n, int k){
-        HashMap<Integer, Integer> res = new HashMap<>();
+        HashMap<Integer, Integer> res = new LinkedHashMap<>();
         List<Integer> sorted_arr = Arrays.stream(arr).boxed().sorted().collect(Collectors.toList());
         int s = sorted_arr.stream().skip(1).limit(k).mapToInt(Integer::intValue).sum() - k* sorted_arr.get(0);
         res.put(sorted_arr.get(0), s);
