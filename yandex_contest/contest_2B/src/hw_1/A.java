@@ -1,3 +1,5 @@
+package hw_1;
+
 import java.util.Scanner;
 
 public class A {
