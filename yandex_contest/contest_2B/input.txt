@@ -1,0 +1,212 @@
+openapi=3.0.0
+info.description=Вступительное задание в Осеннюю Школу Бэкенд Разработки Яндекса 2022
+info.title=Yet Another Disk Open API
+info.version=1.0
+paths./imports.post.tags=Базовые задачи
+paths./imports.post.description=Импортирует элементы файловой системы. Элементы импортированные повторно обновляют текущие.
+Изменение типа элемента с папки на файл и с файла на папку не допускается.
+Порядок элементов в запросе является произвольным.
+
+  - id каждого элемента является уникальным среди остальных элементов
+  - поле id не может быть равно null
+  - родителем элемента может быть только папка
+  - принадлежность к папке определяется полем parentId
+  - элементы могут не иметь родителя (при обновлении parentId на null элемент остается без родителя)
+  - поле url при импорте папки всегда должно быть равно null
+  - размер поля url при импорте файла всегда должен быть меньше либо равным 255
+  - поле size при импорте папки всегда должно быть равно null
+  - поле size для файлов всегда должно быть больше 0
+  - при обновлении элемента обновленными считаются **все** их параметры
+  - при обновлении параметров элемента обязательно обновляется поле **date** в соответствии с временем обновления
+  - в одном запросе не может быть двух элементов с одинаковым id
+  - дата обрабатывается согласно ISO 8601 (такой придерживается OpenAPI). Если дата не удовлетворяет данному формату, ответом будет код 400.
+
+Гарантируется, что во входных данных нет циклических зависимостей и поле updateDate монотонно возрастает. Гарантируется, что при проверке передаваемое время кратно секундам.
+
+paths./imports.post.requestBody.content.application/json.schema.$ref=#/components/schemas/SystemItemImportRequest
+paths./imports.post.responses.200.description=Вставка или обновление прошли успешно.
+paths./imports.post.responses.400.description=Невалидная схема документа или входные данные не верны.
+paths./imports.post.responses.400.content.application/json.schema.$ref=#/components/schemas/Error
+paths./imports.post.responses.400.content.application/json.examples.response.value={
+  "code": 400,
+  "message": "Validation Failed"
+}
+paths./delete/{id}.delete.tags=Базовые задачи
+paths./delete/{id}.delete.description=Удалить элемент по идентификатору. При удалении папки удаляются все дочерние элементы. Доступ к истории обновлений удаленного элемента невозможен.
+
+**Обратите, пожалуйста, внимание на этот обработчик. При его некорректной работе тестирование может быть невозможно.**
+
+paths./delete/{id}.delete.parameters={description=Идентификатор, in=path, name=id, required=true, schema={type=string, format=id}, example=элемент_1_1}, {description=Дата и время запроса, in=query, name=date, required=true, schema={type=string, format=date-time}, example=2022-05-28T21:12:01.516Z}
+paths./delete/{id}.delete.responses.200.description=Удаление прошло успешно.
+paths./delete/{id}.delete.responses.400.description=Невалидная схема документа или входные данные не верны.
+paths./delete/{id}.delete.responses.400.content.application/json.schema.$ref=#/components/schemas/Error
+paths./delete/{id}.delete.responses.400.content.application/json.examples.response.value={
+  "code": 400,
+  "message": "Validation Failed"
+}
+paths./delete/{id}.delete.responses.404.description=Элемент не найден.
+paths./delete/{id}.delete.responses.404.content.application/json.schema.$ref=#/components/schemas/Error
+paths./delete/{id}.delete.responses.404.content.application/json.examples.response.value={
+  "code": 404,
+  "message": "Item not found"
+}
+paths./nodes/{id}.get.tags=Базовые задачи
+paths./nodes/{id}.get.description=Получить информацию об элементе по идентификатору. При получении информации о папке также предоставляется информация о её дочерних элементах.
+
+- для пустой папки поле children равно пустому массиву, а для файла равно null
+- размер папки - это суммарный размер всех её элементов. Если папка не содержит элементов, то размер равен 0. При обновлении размера элемента, суммарный размер папки, которая содержит этот элемент, тоже обновляется.
+
+paths./nodes/{id}.get.parameters={description=Идентификатор элемента, in=path, name=id, required=true, schema={type=string, format=id}, example=элемент_1_1}
+paths./nodes/{id}.get.responses.200.description=Информация об элементе.
+paths./nodes/{id}.get.responses.200.content.application/json.schema.$ref=#/components/schemas/SystemItem
+paths./nodes/{id}.get.responses.400.description=Невалидная схема документа или входные данные не верны.
+paths./nodes/{id}.get.responses.400.content.application/json.schema.$ref=#/components/schemas/Error
+paths./nodes/{id}.get.responses.400.content.application/json.examples.response.value={
+  "code": 400,
+  "message": "Validation Failed"
+}
+paths./nodes/{id}.get.responses.404.description=Элемент не найден.
+paths./nodes/{id}.get.responses.404.content.application/json.schema.$ref=#/components/schemas/Error
+paths./nodes/{id}.get.responses.404.content.application/json.examples.response.value={
+  "code": 404,
+  "message": "Item not found"
+}
+paths./updates.get.tags=Дополнительные задачи
+paths./updates.get.description=Получение списка **файлов**, которые были обновлены за последние 24 часа включительно [date - 24h, date] от времени переданном в запросе.
+
+paths./updates.get.parameters={description=Дата и время запроса. Дата должна обрабатываться согласно ISO 8601 (такой придерживается OpenAPI). Если дата не удовлетворяет данному формату, необходимо отвечать 400, in=query, name=date, required=true, schema={type=string, format=date-time}, example=2022-05-28T21:12:01.000Z}
+paths./updates.get.responses.200.description=Список элементов, которые были обновлены.
+paths./updates.get.responses.200.content.application/json.schema.$ref=#/components/schemas/SystemItemHistoryResponse
+paths./updates.get.responses.400.description=Невалидная схема документа или входные данные не верны.
+paths./updates.get.responses.400.content.application/json.schema.$ref=#/components/schemas/Error
+paths./updates.get.responses.400.content.application/json.examples.response.value={
+  "code": 400,
+  "message": "Validation Failed"
+}
+paths./node/{id}/history.get.tags=Дополнительные задачи
+paths./node/{id}/history.get.description=Получение истории обновлений по элементу за заданный полуинтервал [from, to). История по удаленным элементам недоступна.
+
+- размер папки - это суммарный размер всех её элементов
+- можно получить статистику за всё время.
+
+paths./node/{id}/history.get.parameters={in=path, name=id, schema={type=string, format=id}, required=true, description=id элемента для которого будет отображаться история, example=элемент_1_1}, {in=query, name=dateStart, schema={type=string, format=date-time}, required=false, description=Дата и время начала интервала, для которого считается история. Дата должна обрабатываться согласно ISO 8601 (такой придерживается OpenAPI). Если дата не удовлетворяет данному формату, необходимо отвечать 400., example=2022-05-28T21:12:01.000Z}, {in=query, name=dateEnd, schema={type=string, format=date-time}, required=false, description=Дата и время конца интервала, для которого считается история. Дата должна обрабатываться согласно ISO 8601 (такой придерживается OpenAPI). Если дата не удовлетворяет данному формату, необходимо отвечать 400., example=2022-05-28T21:12:01.000Z}
+paths./node/{id}/history.get.responses.200.description=История по элементу.
+paths./node/{id}/history.get.responses.200.content.application/json.schema.$ref=#/components/schemas/SystemItemHistoryResponse
+paths./node/{id}/history.get.responses.400.description=Некорректный формат запроса или некорректные даты интервала.
+paths./node/{id}/history.get.responses.400.content.application/json.schema.$ref=#/components/schemas/Error
+paths./node/{id}/history.get.responses.400.content.application/json.examples.response.value={
+  "code": 400,
+  "message": "Validation Failed"
+}
+paths./node/{id}/history.get.responses.404.description=Элемент не найден.
+paths./node/{id}/history.get.responses.404.content.application/json.schema.$ref=#/components/schemas/Error
+paths./node/{id}/history.get.responses.404.content.application/json.examples.response.value={
+  "code": 404,
+  "message": "Item not found"
+}
+components.schemas.SystemItemType.type=string
+components.schemas.SystemItemType.description=Тип элемента - папка или файл
+components.schemas.SystemItemType.enum=FILE, FOLDER
+components.schemas.SystemItem.type=object
+components.schemas.SystemItem.required=id, date, type
+components.schemas.SystemItem.properties.id.type=string
+components.schemas.SystemItem.properties.id.nullable=false
+components.schemas.SystemItem.properties.id.description=Уникальный идентфикатор
+components.schemas.SystemItem.properties.id.example=элемент_1_1
+components.schemas.SystemItem.properties.url.description=Ссылка на файл. Для папок поле равнно null.
+components.schemas.SystemItem.properties.url.type=string
+components.schemas.SystemItem.properties.url.nullable=true
+components.schemas.SystemItem.properties.date.type=string
+components.schemas.SystemItem.properties.date.format=date-time
+components.schemas.SystemItem.properties.date.nullable=false
+components.schemas.SystemItem.properties.date.description=Время последнего обновления элемента.
+components.schemas.SystemItem.properties.date.example=2022-05-28T21:12:01.000Z
+components.schemas.SystemItem.properties.parentId.type=string
+components.schemas.SystemItem.properties.parentId.nullable=true
+components.schemas.SystemItem.properties.parentId.description=id родительской папки
+components.schemas.SystemItem.properties.parentId.example=элемент_1_1
+components.schemas.SystemItem.properties.type.$ref=#/components/schemas/SystemItemType
+components.schemas.SystemItem.properties.size.description=Целое число, для папки - это суммарный размер всех элеметов.
+components.schemas.SystemItem.properties.size.type=integer
+components.schemas.SystemItem.properties.size.nullable=true
+components.schemas.SystemItem.properties.size.format=int64
+components.schemas.SystemItem.properties.children.description=Список всех дочерних элементов. Для файлов поле равно null.
+components.schemas.SystemItem.properties.children.type=array
+components.schemas.SystemItem.properties.children.items.$ref=#/components/schemas/SystemItem
+components.schemas.SystemItem.example.id=элемент_1_2
+components.schemas.SystemItem.example.url=null
+components.schemas.SystemItem.example.type=FOLDER
+components.schemas.SystemItem.example.parentId=null
+components.schemas.SystemItem.example.date=2022-05-28T21:12:01.000Z
+components.schemas.SystemItem.example.size=12
+components.schemas.SystemItem.example.children={url=/file/url1, id=элемент_1_3, size=4, date=2022-05-28T21:12:01.000Z, type=FILE, parentId=элемент_1_2}, {type=FOLDER, url=null, id=элемент_1_1, date=2022-05-26T21:12:01.000Z, parentId=элемент_1_2, size=8, children=[{url=/file/url2, id=элемент_1_4, parentId=элемент_1_1, date=2022-05-26T21:12:01.000Z, size=8, type=FILE}]}
+components.schemas.SystemItemImport.type=object
+components.schemas.SystemItemImport.required=id, type
+components.schemas.SystemItemImport.properties.id.type=string
+components.schemas.SystemItemImport.properties.id.nullable=false
+components.schemas.SystemItemImport.properties.id.description=Уникальный идентфикатор
+components.schemas.SystemItemImport.properties.id.example=элемент_1_1
+components.schemas.SystemItemImport.properties.url.description=Ссылка на файл. Для папок поле равнно null.
+components.schemas.SystemItemImport.properties.url.type=string
+components.schemas.SystemItemImport.properties.url.nullable=true
+components.schemas.SystemItemImport.properties.parentId.type=string
+components.schemas.SystemItemImport.properties.parentId.nullable=true
+components.schemas.SystemItemImport.properties.parentId.example=элемент_1_1
+components.schemas.SystemItemImport.properties.parentId.description=id родительской папки
+components.schemas.SystemItemImport.properties.type.$ref=#/components/schemas/SystemItemType
+components.schemas.SystemItemImport.properties.size.nullable=true
+components.schemas.SystemItemImport.properties.size.description=Целое число, для папок поле должно содержать null.
+components.schemas.SystemItemImport.properties.size.type=integer
+components.schemas.SystemItemImport.properties.size.format=int64
+components.schemas.SystemItemImport.example.id=элемент_1_4
+components.schemas.SystemItemImport.example.url=/file/url1
+components.schemas.SystemItemImport.example.parentId=элемент_1_1
+components.schemas.SystemItemImport.example.size=234
+components.schemas.SystemItemImport.example.type=FILE
+components.schemas.SystemItemImportRequest.type=object
+components.schemas.SystemItemImportRequest.properties.items.type=array
+components.schemas.SystemItemImportRequest.properties.items.description=Импортируемые элементы
+components.schemas.SystemItemImportRequest.properties.items.nullable=false
+components.schemas.SystemItemImportRequest.properties.items.items.$ref=#/components/schemas/SystemItemImport
+components.schemas.SystemItemImportRequest.properties.updateDate.type=string
+components.schemas.SystemItemImportRequest.properties.updateDate.nullable=false
+components.schemas.SystemItemImportRequest.properties.updateDate.format=date-time
+components.schemas.SystemItemImportRequest.properties.updateDate.example=2022-05-28T21:12:01.000Z
+components.schemas.SystemItemImportRequest.properties.updateDate.description=Время обновления добавляемых элементов.
+components.schemas.SystemItemHistoryUnit.type=object
+components.schemas.SystemItemHistoryUnit.required=id, type, date
+components.schemas.SystemItemHistoryUnit.properties.id.type=string
+components.schemas.SystemItemHistoryUnit.properties.id.nullable=false
+components.schemas.SystemItemHistoryUnit.properties.id.description=Уникальный идентфикатор
+components.schemas.SystemItemHistoryUnit.properties.id.example=элемент_1_1
+components.schemas.SystemItemHistoryUnit.properties.url.description=Ссылка на файл. Для папок поле равнно null.
+components.schemas.SystemItemHistoryUnit.properties.url.type=string
+components.schemas.SystemItemHistoryUnit.properties.url.nullable=true
+components.schemas.SystemItemHistoryUnit.properties.parentId.type=string
+components.schemas.SystemItemHistoryUnit.properties.parentId.nullable=true
+components.schemas.SystemItemHistoryUnit.properties.parentId.description=id родительской папки
+components.schemas.SystemItemHistoryUnit.properties.parentId.example=элемент_1_1
+components.schemas.SystemItemHistoryUnit.properties.type.$ref=#/components/schemas/SystemItemType
+components.schemas.SystemItemHistoryUnit.properties.size.description=Целое число, для папки - это суммарный размер всех её элементов.
+components.schemas.SystemItemHistoryUnit.properties.size.type=integer
+components.schemas.SystemItemHistoryUnit.properties.size.format=int64
+components.schemas.SystemItemHistoryUnit.properties.size.nullable=true
+components.schemas.SystemItemHistoryUnit.properties.date.type=string
+components.schemas.SystemItemHistoryUnit.properties.date.nullable=false
+components.schemas.SystemItemHistoryUnit.properties.date.format=date-time
+components.schemas.SystemItemHistoryUnit.properties.date.description=Время последнего обновления элемента.
+components.schemas.SystemItemHistoryUnit.example.id=элемент_1_4
+components.schemas.SystemItemHistoryUnit.example.url=/file/url1
+components.schemas.SystemItemHistoryUnit.example.date=2022-05-28T21:12:01.000Z
+components.schemas.SystemItemHistoryUnit.example.parentId=элемент_1_1
+components.schemas.SystemItemHistoryUnit.example.size=234
+components.schemas.SystemItemHistoryUnit.example.type=FILE
+components.schemas.SystemItemHistoryResponse.type=object
+components.schemas.SystemItemHistoryResponse.properties.items.description=История в произвольном порядке.
+components.schemas.SystemItemHistoryResponse.properties.items.type=array
+components.schemas.SystemItemHistoryResponse.properties.items.items.$ref=#/components/schemas/SystemItemHistoryUnit
+components.schemas.Error.required=code, message
+components.schemas.Error.properties.code.nullable=false
+components.schemas.Error.properties.code.type=integer
+components.schemas.Error.properties.message.nullable=false
+components.schemas.Error.properties.message.type=string
