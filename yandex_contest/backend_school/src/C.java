@@ -68,6 +68,7 @@ public class C {
         }
     }
 
+
     public static JSONParser parser = new JSONParser();
     public static void solution() throws IOException, ParseException {
         BufferedReader br = new BufferedReader(new FileReader("input.txt"));
