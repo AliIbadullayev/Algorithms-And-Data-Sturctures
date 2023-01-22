@@ -11,6 +11,10 @@ public class Main {
         System.out.println("Есть ли изначальные страницы памяти? 0 - нет, 1 - да");
         int started = Integer.parseInt(scanner.nextLine());
 
+
+
+
+
         if (started == 1) {
             System.out.println("Введите изначальные страницы в памяти:");
             String startedPages = scanner.nextLine();
