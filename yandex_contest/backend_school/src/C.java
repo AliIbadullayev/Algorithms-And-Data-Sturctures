@@ -93,6 +93,9 @@ public class C {
                 list = list.stream().filter(product -> product.getDate().isAfter(LocalDate.parse(law[1], DateTimeFormatter.ofPattern("dd.MM.yyyy"))) || product.getDate().isEqual(LocalDate.parse(law[1], DateTimeFormatter.ofPattern("dd.MM.yyyy")))).collect(Collectors.toList());
             }
         }
+
+
+
         list = list.stream().sorted(Comparator.comparingInt(Product::getId)).collect(Collectors.toList());
         JSONArray jsonArray = new JSONArray();
         for (Product product: list){
